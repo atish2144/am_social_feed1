@@ -1,15 +1,28 @@
 import { Button, Container, Grid, TextField } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import axios from 'axios'
-// import GoogleIcon from '@mui/icons-material/Google';
-// import { GoogleLogin } from 'react-google-login';
+import GoogleIcon from '@mui/icons-material/Google';
+import { GoogleLogin } from 'react-google-login';
+
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+
 function Login() {
+    const [open, setOpen] = React.useState(false);
+
     const [user, setuser] = useState({
         email: "",
         password: ""
     })
 
+    const [errorMessage, setErrorMessage] = React.useState("");
     const [data, setdata] = useState("")
     const [lcdata, setlcdata] = useState(JSON.parse(localStorage.getItem("data")))
 
@@ -19,12 +32,10 @@ function Login() {
     //     console.log(lcdata);
     //     if (lcdata.token != null && lcdata.token) {
     //         console.log(lcdata.token);
-    //         // navigate('/Feed')
+    //         navigate('/Feed')
     //     }
 
     // }, [data])
-
-
 
 
     const handleLogin = async () => {
@@ -41,22 +52,46 @@ function Login() {
             .then((res) => {
                 if (res.status) {
                     setdata(res.data)
-                    alert(res.data.message);
+                    // alert(res.data.message);
                     // console.log(res);
+                    handleClick();
                     localStorage.setItem("data", JSON.stringify(res.data))
-                    navigate('/Feed')
+
+                    setTimeout(() => {
+                        navigate('/Feed')
+
+                    }, 1000);
+
                 }
             })
             .catch((err) => {
-                // console.log(data)
-                alert(err.response.data.message);
-
+                // alert(err.response.data.message);
+                setErrorMessage(err.response.data.message)
             })
     }
 
-    // console.log(data);
+    const handleClick = () => {
+        setOpen(true);
+    };
+    const handleClose = (event, reason) => {
+        if (reason === "clickaway") {
+            return;
+        }
+
+        setOpen(false);
+    };
+
     return (
         <div>
+            <Snackbar open={open} autoHideDuration={700} onClose={handleClose}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+
+                <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+                    Login Successfully
+                </Alert>
+            </Snackbar>
+
             <Container width="100vh" sx={{ textAlign: "center" }}>
 
                 <Grid
@@ -78,7 +113,7 @@ function Login() {
                             label="Email"
                             placeholder='Enter Email'
                             value={user.email}
-                            onChange={(e) => setuser({ ...user, email: e.target.value })}
+                            onChange={(e) => { setuser({ ...user, email: e.target.value }); setErrorMessage("") }}
                             fullWidth
                             required
                             sx={{ marginBottom: "20px" }}
@@ -94,12 +129,17 @@ function Login() {
                             label="Password"
                             placeholder='Enter Password'
                             value={user.password}
-                            onChange={(e) => setuser({ ...user, password: e.target.value })}
+                            onChange={(e) => { setuser({ ...user, password: e.target.value }); setErrorMessage("") }}
                             fullWidth
                             required
                             sx={{ marginBottom: "20px" }}
                         />
                     </Grid>
+
+                    <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
+                        {errorMessage && <div className="error" style={{ color: "red" }}> {errorMessage} </div>}
+                    </Grid>
+
 
                     <Grid item xs={12} sm={12} sx={{ marginTop: "30px" }}>
                         <Button type='submit' variant='contained' color='primary' sx={{ marginLeft: "auto", marginRight: "auto" }} onClick={() => { handleLogin() }} >Login </Button>
@@ -107,20 +147,27 @@ function Login() {
                     {/* <Grid item xs={12} style={{ marginBottom: "50px" }} >
                         <label style={{ fontSize: "20px", alignItems: "center" }} >Does not have a account</label>
                     </Grid> */}
-                    <Grid item xs={12} sm={12} sx={{ marginTop: "30px" }}>
+                    {/* <Grid item xs={12} sm={12} sx={{ marginTop: "30px" }}>
                         <Button type='submit' variant='contained' color='primary' sx={{ marginLeft: "auto", marginRight: "auto", marginBottom: "10px" }} onClick={() => navigate('/signup')} >Sign up </Button>
+                    </Grid> */}
+
+                    <Grid item xs={12} sm={12} sx={{ marginTop: "30px" }}>
+                        <label> does not have a acount ? <a href='' onClick={() => navigate('/signup')}>sign up</a></label>
                     </Grid>
+
+
 
                     {/* <button style={{ fontSize: "20px", marginBottom: "30px", marginLeft: "auto", marginRight: "auto" }}> <GoogleIcon /> Login with Google</button> */}
                     <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
-                        {/* <GoogleLogin
+                        <GoogleLogin
                             clientId="658977310896-knrl3gka66fldh83dao2rhgbblmd4un9.apps.googleusercontent.com"
                             buttonText="Login With Google"
                             // onSuccess={responseGoogle}
-                            //  onFailure={responseGoogle}
+                            // onFailure={responseGoogle}
+                            onClick={() => console.log("google")}
                             cookiePolicy={'single_host_origin'}
                             style={{ marginBottom: "30px", marginLeft: "auto", marginRight: "auto" }}
-                        />, */}
+                        />
                     </Grid>
 
                 </Grid>

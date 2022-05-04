@@ -12,7 +12,7 @@ function Signup() {
     })
     const [data, setdata] = useState("")
     const navigate = useNavigate()
-
+    const [errorMessage, setErrorMessage] = React.useState("");
 
     const handleSignup = async () => {
 
@@ -34,8 +34,8 @@ function Signup() {
             })
             .catch((err) => {
                 console.log(data)
-                alert(err.response.data.message);
-
+                // alert(err.response.data.message);
+                setErrorMessage(err.response.data.message)
             })
 
     }
@@ -47,7 +47,7 @@ function Signup() {
                 container
                 xs={12}
                 component="main"
-                sx={{ width: "130vh", height: "70vh", marginLeft: "auto", marginRight: "auto", border: "1px solid black" }}
+                sx={{ width: "130vh", height: "80vh", marginLeft: "auto", marginRight: "auto", border: "1px solid black" }}
             >
 
                 <Grid item xs={12} >
@@ -62,7 +62,7 @@ function Signup() {
                         label="First Name"
                         placeholder='Enter First Name'
                         value={user.firstname}
-                        onChange={(e) => setuser({ ...user, firstname: e.target.value })}
+                        onChange={(e) => { setuser({ ...user, firstname: e.target.value }); setErrorMessage("") }}
                         fullWidth
                         required
                     />
@@ -76,7 +76,7 @@ function Signup() {
                         label="Last Name"
                         placeholder='Enter Last name'
                         value={user.lastname}
-                        onChange={(e) => setuser({ ...user, lastname: e.target.value })}
+                        onChange={(e) => { setuser({ ...user, lastname: e.target.value }); setErrorMessage("") }}
                         fullWidth
                         required
                     />
@@ -90,7 +90,7 @@ function Signup() {
                         label="Email"
                         placeholder='Enter your email'
                         value={user.email}
-                        onChange={(e) => setuser({ ...user, email: e.target.value })}
+                        onChange={(e) => { setuser({ ...user, email: e.target.value }); setErrorMessage("") }}
                         fullWidth
                         required
                     />
@@ -106,44 +106,26 @@ function Signup() {
                         id="password"
                         value={user.password}
                         autoComplete="current-password"
-                        onChange={(e) => setuser({ ...user, password: e.target.value })}
+                        onChange={(e) => { setuser({ ...user, password: e.target.value }); setErrorMessage("") }}
                         error={false}
                         autoFocus
                         sx={{ minWidth: "100%" }}
                     />
                 </Grid>
-
-
-
-
-                {/* <Grid item xs={12} style={{ paddingLeft: "0px", marginTop: "20px" }}>
-                        <TextField
-                            required
-                            size="small"
-                            id="email"
-                            type="email"
-                            error={false}
-                            placeholder="Email Address"
-                            name="email"
-                            autoComplete="email"
-                            autoFocus
-                        //   value={signInForm.email}
-                        //   onChange={(value) =>
-                        // setSignInForm({
-                        //   email: value.target.value,
-                        //   password: signInForm.password,
-                        // })
-                        //   }
-                        //   sx={{ minWidth: "100%" }}
-                        />
-                    </Grid> */}
+                <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
+                    {errorMessage && <div className="error" style={{ color: "red" }}> {errorMessage} </div>}
+                </Grid>
 
                 <Grid item xs={12} sm={6} sx={{ marginTop: "30px" }}>
                     <Button type='submit' variant='contained' color='primary' sx={{ marginRight: "20px" }} onClick={() => handleSignup()} >Sign up</Button>
+
                     <Button type='submit' variant='contained' color='primary' onClick={() => navigate('/')}>Cancle</Button>
-
-
                 </Grid>
+
+                <Grid item xs={12} sm={12} sx={{ marginTop: "10px" }}>
+                    <label style={{ marginLeft: "1%" }}> Already have account? <a href='' onClick={() => navigate('/')}>sign in</a></label>
+                </Grid>
+
 
             </Grid>
 

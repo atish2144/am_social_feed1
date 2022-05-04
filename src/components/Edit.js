@@ -1,12 +1,31 @@
 import { Button, Card, CardContent, Container, FormControl, FormControlLabel, FormLabel, Grid, Input, Radio, RadioGroup, TextareaAutosize, TextField } from '@mui/material'
 import React, { useState, useEffect } from 'react'
-import Header from './Header'
+// import Header from './Header'
 import axios from 'axios';
 import { useNavigate } from "react-router-dom"
+import DateFnsUtils from "@date-io/date-fns";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
+import MuiPhoneNumber from 'material-ui-phone-number';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+
+
+
 
 function Edit() {
-    // const [data, setdata] = useState(JSON.parse(localStorage.getItem("data")));
+    const lcdata = JSON.parse(localStorage.getItem("data"))
+    const id = lcdata && lcdata.currentUser._id;
+    console.log(id);
+
+    const [open, setOpen] = React.useState(false);
+    const navigate = useNavigate()
     const [data, setdata] = useState({
+        "img": "",
         "firstname": "",
         "lastname": "",
         "biodata": "",
@@ -16,38 +35,40 @@ function Edit() {
         "email": ""
     }
     );
+
     const [image, setimage] = useState("")
-    const [lcdata, setlcdata] = useState(JSON.parse(localStorage.getItem("data")));
-    // console.log(lcdata);
-    const [payload, setpayload] = useState("")
-    const [file, setFile] = useState("https://gogetfunding.com/wp-content/uploads/2020/06/6707938/img/mimg_6707938_1592357701.png");
-    // const [user, setUser] = useState(
-    //     {
-    //         "firstname": data.firstname || "",
-    //         "lastname": data.lastname || "",
-    //         "biodata": data.bio || "",
-    //         "gender": data.gender || "",
-    //         "dateofbirth": data.dateofbirth || "",
-    //         "mobile": data.mobile || "",
-    //         "email": data.email || ""
-    //     }
-    // )
-    const navigate = useNavigate()
-    const id = lcdata.currentUser._id;
-    // console.log(data.token);
-    // let payload;
+    const [file, setFile] = useState();
+
+    const [updateProfile, setUpdateProfile] = useState(false)
+
+
+    //snackbar
+    const handleClick = () => {
+        setOpen(true);
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+    };
+
 
     const handleUpdate = async () => {
 
         let formData = new FormData()
         formData.append('image', image);
-        console.log("data", payload);
+        formData.append('firstname', data.firstname);
+        formData.append('biodata', data.biodata);
+        formData.append('gender', data.gender);
+        formData.append('dateofbirth', data.dateofbirth);
+        formData.append('mobile', data.mobile);
+        formData.append('email', data.email);
 
-        // console.log("1", payload);
-        // console.log(id);
         await axios(`http://localhost:8080/edit-profile/${id}`, {
             method: "PUT",
-            data: payload,
+            data: formData,
             headers: {
                 "auth-token": lcdata.token,
             },
@@ -55,80 +76,99 @@ function Edit() {
         })
 
             .then((res) => {
-                // if (res.status) {
-                alert(res.data.message);
-                navigate('/')
-                // }
+                // alert(res.data.message);
+                handleClick();
+                console.log(res);
+                setTimeout(() => {
+                    navigate('/Feed')
+
+                }, 1500);
+
             })
             .catch((err) => {
-                // console.log(data)
+                console.log(err)
                 alert(err.response.data.message);
                 console.log("hi");
             })
-        // console.log(user);
+
     }
-    // console.log(data);
+
 
     function handleChange(e) {
         setimage(e.target.files[0])
         setFile(URL.createObjectURL(e.target.files[0]));
+        setUpdateProfile(true)
     }
-    useEffect(() => {
-        console.log(data);
-        setpayload(data)
-    }, [data])
 
     useEffect(() => {
+
         axios(`http://localhost:8080/profile/${id}`, {
             method: "GET",
         })
             .then((res) => {
-                // console.log(res.data.users);
+                console.log(res.data.users.img);
                 if (res.data.users != "") {
+
                     setdata({
+                        img: res.data.users.img || file,
                         firstname: res.data.users.firstname || "",
                         lastname: res.data.users.lastname || "",
                         biodata: res.data.users.biodata || "",
                         gender: res.data.users.gender || "",
                         dateofbirth: res.data.users.dateofbirth || "",
-                        mobile: res.data.users.mobile || "",
+                        mobile: res.data.users.mobile || " ",
                         email: res.data.users.email || "",
                     })
                 }
             })
             .catch((err) => {
-                console.log("hi");
+                console.log(err);
             })
     }, [])
-    console.log("1", data);
+
+    console.log(data);
+
     return (
         <div>
-            <Header></Header>
+            <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+                    User Updated
+                </Alert>
+            </Snackbar>
+
+
+            {/* <Header></Header> */}
             <Card sx={{ minWidth: 450, maxWidth: 700, margin: '0 auto', marginTop: "50px" }}>
                 <CardContent>
                     <Grid container spacing={1}>
 
-
-                        <Grid item xs={4}
+                        <Grid item
+                            xs={4}
                             sx={{
-                                display: "flex",
-                                justifyContent: "center",
+                                display: "flex", justifyContent: "center",
                                 alignItems: "center",
+                                // width: "70%",
+                                // height: "90%"       border: "1px solid grey",
 
                             }}
                         >
-                            <img src={file} alt="log" style={{ width: "60%", height: "60%" }} />
+                            <img src={updateProfile ? file : `http://localhost:8080/${data.img}`} alt="log" style={{
+                                width: "70%",
+                                height: "90%",
+                            }}
+                            />
                         </Grid>
+
+
                         <Grid item sx={{ marginTop: "10px" }}>
                             <FormControl>
-                                {/* <FormLabel>Change Profile Picture</FormLabel> */}
+
+                                <FormLabel>Change Profile Picture</FormLabel>
                                 <Input type="file" label="Upload Profile Picture" onChange={handleChange} />
                             </FormControl>
+
                         </Grid>
-
-
-
-
 
 
                         <Grid item xs={12} sm={12}>
@@ -136,7 +176,7 @@ function Edit() {
                                 error={false}
                                 type='text'
                                 id="outlined-error"
-                                // label=" FirstName"
+
                                 placeholder='Enter first name'
                                 value={data.firstname}
                                 //   defaultValue={lcdata.currentUser.firstname}
@@ -193,20 +233,26 @@ function Edit() {
                             </FormControl>
                         </Grid>
 
+
                         <Grid item xs={12} sm={6}>
-                            <TextField
-                                id="date"
-                                label="Date of Birth"
-                                type="date"
-                                // defaultValue="1999-04-16"
-                                // sx={{ width: 220 }}
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                                onChange={(e) => setdata({ ...data, dateofbirth: e.target.value })}
-                                fullWidth
-                                required
-                            />
+                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                {/* <FormControl> */}
+                                {/* <FormLabel>DOB</FormLabel> */}
+                                <TextField
+                                    id="date"
+                                    type="date"
+                                    value={data.dateofbirth}
+                                    onChange={(value) =>
+                                        setdata({
+                                            ...data,
+                                            dateofbirth: value.target.value,
+                                        })
+                                    }
+                                    fullWidth
+                                    required
+                                />
+                                {/* </FormControl> */}
+                            </MuiPickersUtilsProvider>
                         </Grid>
 
 
@@ -215,8 +261,9 @@ function Edit() {
                                 error={false}
                                 type='number'
                                 id="outlined-error"
-                                label="Mobile"
-                                placeholder='mobile'
+                                // label="Last  Name"
+                                placeholder='Enter Mobile Number'
+                                // defaultValue={data.lastname}
                                 value={data.mobile}
                                 onChange={(e) => setdata({ ...data, mobile: e.target.value })}
                                 fullWidth
@@ -225,7 +272,16 @@ function Edit() {
                         </Grid>
 
 
+                        {/* <Grid item xs={12} sm={12}>
+                            <MuiPhoneNumber defaultCountry={'in'}
+                                placeholder='mobile'
+                                value={data.mobile}
+                                onChange={(e) => setdata({ ...data, mobile: e.target.value })}
+                                fullWidth
+                                required
+                            />
 
+                        </Grid> */}
 
                         <Grid item xs={12} sm={12}>
                             <TextField
@@ -243,14 +299,14 @@ function Edit() {
                         </Grid>
 
 
-                        <Grid item xs={12} sm={6}>
-                            <Button type='submit' variant='contained' color='primary' sx={{ float: "right", marginTop: "20px" }} onClick={() => handleUpdate()}>Update</Button>
+                        <Grid item xs={12} sm={12}>
+                            <Button type='submit' variant='contained' color='primary' sx={{ float: "left", marginTop: "20px" }} onClick={() => handleUpdate()}>Update</Button>
+                            <Button type='submit' variant='contained' color='primary' sx={{ float: "center", marginTop: "20px" }} onClick={() => navigate('/Feed')}>Cancle</Button>
                         </Grid>
                     </Grid>
                 </CardContent>
             </Card>
 
-            {/* </Container> */}
 
         </div>
     )

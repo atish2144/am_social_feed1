@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,8 +8,6 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
-// import Button from '@mui/material/Button';   
-import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { Button, Grid, Modal, TextField } from '@mui/material';
@@ -34,10 +32,10 @@ const style = {
 const settings = ['Edit Profile', 'Change Password', 'Logout']
 
 
-
-
 function Header() {
 
+
+    const [errorMessage, setErrorMessage] = React.useState("");
     //password
     const [password1, setpassword1] = useState({
         password: "",
@@ -62,6 +60,8 @@ function Header() {
     //firstname
     let firstname = data.currentUser.firstname.split('');
     firstname = firstname[0];
+
+
 
     //lastname
     let lastname = data.currentUser.lastname.split('');
@@ -89,17 +89,15 @@ function Header() {
     };
 
     const handleChange = async () => {
-        // if(password1.newpassword===confirmpassword)
-        // {
-        //     setpassMatch(true);
-        // }
+        if (password1.newpassword === confirmpassword) {
+            setpassMatch(true);
+        }
         let payload = {
             password: password1.password,
             newpassword: password1.newpassword
         }
-        // console.log(payload);
-        //   if(setpassMatch)
-        //   {  
+        console.log(setpassMatch);
+        // if (passMatch) {
         await axios(`http://localhost:8080/login/changepwd/${id}`, {
             method: "PATCH",
             data: payload,
@@ -108,21 +106,65 @@ function Header() {
             },
         })
             .then((res) => {
-                // if (res.status) {
-                alert(res.data.message);
-                navigate('/')
-                // }
+                alert();
+                navigate('/Feed')
+                handleClose()
+
             })
             .catch((err) => {
                 // console.log(data)
-                alert(err.response.data.message);
+                // alert("d");
+                // alert(err.response.data.message);
+                setErrorMessage(err.data.message)
                 // console.log("hi");
 
             })
-        //   } 
-        //   setpassword1({password: "", newpassword: "" })
+        // }
+        // else {
+        // alert("new password and confirm password not match")
+        // setErrorMessage("new password and confirm password not match")
+        // }
+        setpassword1({ password: "", newpassword: "" })
 
     }
+    const [fullname, setfullname] = useState("");
+
+    useEffect(() => {
+        axios(`http://localhost:8080/profile/${data.currentUser._id}`, {
+            method: "GET",
+        })
+            .then((res) => {
+                console.log(res)
+                setfullname(res.data.users.firstname + " " + res.data.users.lastname);
+                console.log(fullname);
+
+            })
+            .catch((err) => {
+                console.log(err);
+
+            })
+    }, [])
+
+    useEffect(() => {
+        axios(`http://localhost:8080/profile/${id}`, {
+            method: "GET",
+        })
+            .then((res) => {
+                console.log(res);
+                if (res.data.users.firstname.img === "") {
+                    console.log("image");
+                }
+                else {
+                    console.log("not image");
+                }
+
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+
+    });
+
 
     return (
         <div>
@@ -138,6 +180,8 @@ function Header() {
                         >
 
                         </Typography>
+
+                        <Typography style={{ fontSize: "20px", color: "black", font: "Bold", textAlign: "center" }}> Am Social Feed</Typography>
 
                         <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                             <IconButton
@@ -194,13 +238,17 @@ function Header() {
                                 </Button>
                             ))} */}
                         </Box>
+                        {/* <Typography>
+                            {fullname}
+                        </Typography> */}
 
                         <Box sx={{ flexGrow: 0 }}>
                             {/* <Tooltip title="Open settings"> */}
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                                 {/* Header avtar */}
-                                <Avatar>{avtarName}
-                                </Avatar >
+
+                                <Avatar> {avtarName} </Avatar >
+
                             </IconButton>
                             {/* </Tooltip> */}
                             <Menu
@@ -219,6 +267,7 @@ function Header() {
                                 open={Boolean(anchorElUser)}
                                 onClose={handleCloseUserMenu}
                             >
+
                                 {/* {settings.map((setting) => (
                                     <MenuItem key={setting} onClick={handleCloseUserMenu}>
                                         <Typography textAlign="center">{setting}</Typography>
@@ -232,16 +281,19 @@ function Header() {
                                     <Typography textAlign="center" onClick={() => handleOpen()} >{settings[1]}</Typography>
                                 </MenuItem>
 
-                                <MenuItem key={2} onClick={() => { handleCloseUserMenu(); navigate('/'); }}>
+                                <MenuItem key={2} onClick={() => { handleCloseUserMenu(); navigate('/'); localStorage.clear() }}>
                                     <Typography textAlign="center"   >{settings[2]}</Typography>
                                 </MenuItem>
 
                             </Menu>
                         </Box>
+                        <Typography >
+                            {fullname}
+                        </Typography>
                     </Toolbar>
                 </Container>
             </AppBar>
-            {/* <Button onClick={handleOpen}>Open modal</Button> */}
+
             <Modal
                 open={open}
                 onClose={handleClose}
@@ -258,7 +310,7 @@ function Header() {
                         label="Password"
                         placeholder='Current Password'
                         value={password1.password}
-                        onChange={(e) => setpassword1({ ...password1, password: e.target.value })}
+                        onChange={(e) => { setpassword1({ ...password1, password: e.target.value }); setErrorMessage("") }}
                         fullWidth
                         required
                         sx={{ marginBottom: "20px" }}
@@ -271,7 +323,7 @@ function Header() {
                         label=" New Password"
                         placeholder=' Enter New Password'
                         value={password1.newpassword}
-                        onChange={(e) => setpassword1({ ...password1, newpassword: e.target.value })}
+                        onChange={(e) => { setpassword1({ ...password1, newpassword: e.target.value }); setErrorMessage("") }}
                         fullWidth
                         required
                         sx={{ marginBottom: "20px" }}
@@ -283,11 +335,15 @@ function Header() {
                         label=" confirm New Password"
                         placeholder='Enter New Password'
                         value={confirmpassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e) => { setConfirmPassword(e.target.value); setErrorMessage("") }}
                         fullWidth
                         required
                         sx={{ marginBottom: "20px" }}
                     />
+
+                    <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
+                        {errorMessage && <div className="error" style={{ color: "red" }}> {errorMessage} </div>}
+                    </Grid>
 
                     <Grid item xs={12} sm={6}>
                         <Button type='submit' variant='contained' color='primary' sx={{ float: "center", marginTop: "20px" }} onClick={() => handleChange()}>Change password</Button>
