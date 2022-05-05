@@ -39,9 +39,37 @@ function Login() {
     // }, [data])
 
 
-    const responseGoogle = (response) => {
+    const responseGoogle = async (res) => {
+        //localhost:8080/login/google-login
+        const payload = {
+            "email": res.Lu.Bv
+        }
 
-        console.log(response);
+        console.log(res.Lu.Bv);
+        await axios(`http://localhost:8080/login/google-login`,
+            {
+                method: "POST",
+                data: payload,
+            })
+            .then((res) => {
+                if (res.status) {
+                    console.log(res.data);
+                    setdata(res.data)
+                    handleClick();
+                    localStorage.setItem("data", JSON.stringify(res.data))
+                    setTimeout(() => {
+                        navigate('/Feed')
+
+                    }, 1000);
+                    setstatus("");
+                    setmessage(res.data.message)
+                }
+            })
+            .catch((err) => {
+                setstatus("error");
+                setmessage(err.response.data.message)
+                setOpen(true);
+            })
     }
 
     const handleLogin = async () => {
@@ -50,10 +78,6 @@ function Login() {
         await axios(`http://localhost:8080/login`, {
             method: "POST",
             data: payload,
-            //   headers: {
-            //     Authorization: token.token,
-            //     "Content-Type": "application/json",
-            //   },
         })
             .then((res) => {
                 if (res.status) {

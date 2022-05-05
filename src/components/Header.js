@@ -277,7 +277,7 @@ function Header() {
                                 {/* Header avtar */}
 
                                 {
-                                    image ? <Avatar alt="Remy Sharp" src={`http://localhost:8080/${img1}`} /> :
+                                    image ? <Avatar alt={`${avtarName}`} src={`http://localhost:8080/${img1}`} /> :
                                         <Avatar> {avtarName} </Avatar >}
 
                             </IconButton>
