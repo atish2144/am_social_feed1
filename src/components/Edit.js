@@ -13,16 +13,14 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-
-
-
-
 function Edit() {
     const lcdata = JSON.parse(localStorage.getItem("data"))
     const id = lcdata && lcdata.currentUser._id;
-    console.log(id);
+
 
     const [open, setOpen] = React.useState(false);
+
+
     const navigate = useNavigate()
     const [data, setdata] = useState({
         "img": "",
@@ -79,6 +77,7 @@ function Edit() {
                 // alert(res.data.message);
                 handleClick();
                 console.log(res);
+
                 setTimeout(() => {
                     navigate('/Feed')
 
@@ -86,9 +85,9 @@ function Edit() {
 
             })
             .catch((err) => {
-                console.log(err)
-                alert(err.response.data.message);
-                console.log("hi");
+                console.log(err.response.data.message.details[0].message)
+                alert(err.response.data.message.details[0].message);
+                navigate('/')
             })
 
     }
@@ -99,6 +98,15 @@ function Edit() {
         setFile(URL.createObjectURL(e.target.files[0]));
         setUpdateProfile(true)
     }
+
+    function handleOnChange(value) {
+        console.log(value);
+        // if (no !== undefined && no !== "") {
+        setdata({ ...data, mobile: value })
+        // }
+        console.log(value);
+    }
+
 
     useEffect(() => {
 
@@ -116,7 +124,7 @@ function Edit() {
                         biodata: res.data.users.biodata || "",
                         gender: res.data.users.gender || "",
                         dateofbirth: res.data.users.dateofbirth || "",
-                        mobile: res.data.users.mobile || " ",
+                        mobile: res.data.users.mobile || "",
                         email: res.data.users.email || "",
                     })
                 }
@@ -126,7 +134,7 @@ function Edit() {
             })
     }, [])
 
-    console.log(data);
+
 
     return (
         <div>
@@ -182,6 +190,7 @@ function Edit() {
                                 //   defaultValue={lcdata.currentUser.firstname}
 
                                 onChange={(e) => setdata({ ...data, firstname: e.target.value })}
+                                helperText="First Name"
                                 fullWidth
                                 required
                             />
@@ -197,6 +206,7 @@ function Edit() {
                                 // defaultValue={data.lastname}
                                 value={data.lastname}
                                 onChange={(e) => setdata({ ...data, lastname: e.target.value })}
+                                helperText="Last Name"
                                 fullWidth
                                 required
                             />
@@ -206,12 +216,14 @@ function Edit() {
                         {/* //Bio */}
                         <Grid item xs={12} sm={12}>
                             <TextareaAutosize
+                                id="bio"
                                 aria-label="minimum height"
                                 minRows={5}
                                 placeholder="Bio"
                                 style={{ width: 665 }}
                                 value={data.biodata}
                                 onChange={(e) => setdata({ ...data, biodata: e.target.value })}
+
                             />
                         </Grid>
 
@@ -234,6 +246,10 @@ function Edit() {
                         </Grid>
 
 
+                        <Grid item xs={6} >
+
+                            <label>Date</label>
+                        </Grid>
                         <Grid item xs={12} sm={6}>
                             <MuiPickersUtilsProvider utils={DateFnsUtils}>
                                 {/* <FormControl> */}
@@ -248,40 +264,41 @@ function Edit() {
                                             dateofbirth: value.target.value,
                                         })
                                     }
-                                    fullWidth
-                                    required
+                                // fullWidth
+                                // required
                                 />
                                 {/* </FormControl> */}
                             </MuiPickersUtilsProvider>
                         </Grid>
 
 
-                        <Grid item xs={12} sm={12}>
+                        {/* <Grid item xs={12} sm={12}>
                             <TextField
                                 error={false}
                                 type='number'
                                 id="outlined-error"
-                                // label="Last  Name"
+                                label="Mobile Number"
                                 placeholder='Enter Mobile Number'
-                                // defaultValue={data.lastname}
+
                                 value={data.mobile}
                                 onChange={(e) => setdata({ ...data, mobile: e.target.value })}
                                 fullWidth
                                 required
                             />
-                        </Grid>
+                        </Grid> */}
 
 
-                        {/* <Grid item xs={12} sm={12}>
+                        <Grid item xs={12} sm={12}>
                             <MuiPhoneNumber defaultCountry={'in'}
                                 placeholder='mobile'
                                 value={data.mobile}
-                                onChange={(e) => setdata({ ...data, mobile: e.target.value })}
+                                // onChange={(e) => setdata({ ...data, mobile: e.target.value })}
+                                onChange={(value) => handleOnChange(value)}
                                 fullWidth
                                 required
                             />
 
-                        </Grid> */}
+                        </Grid>
 
                         <Grid item xs={12} sm={12}>
                             <TextField

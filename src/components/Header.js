@@ -13,6 +13,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Grid, Modal, TextField } from '@mui/material';
 // import { Password } from '@mui/icons-material';
 import axios from 'axios';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+
 
 const style = {
     position: 'absolute',
@@ -34,7 +42,22 @@ const settings = ['Edit Profile', 'Change Password', 'Logout']
 
 function Header() {
 
+    const [open1, setOpen1] = React.useState(false);
 
+    const handleClick1 = () => {
+        setOpen1(true);
+    };
+
+    const handleClose1 = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpen1(false);
+    };
+
+    const [img1, setimg1] = useState("");
+    const [image, setimage] = useState(false);
     const [errorMessage, setErrorMessage] = React.useState("");
     //password
     const [password1, setpassword1] = useState({
@@ -55,13 +78,11 @@ function Header() {
     let data = JSON.parse(localStorage.getItem("data"));
 
     const id = data.currentUser._id
-    // console.log(id);
+
 
     //firstname
     let firstname = data.currentUser.firstname.split('');
     firstname = firstname[0];
-
-
 
     //lastname
     let lastname = data.currentUser.lastname.split('');
@@ -88,44 +109,57 @@ function Header() {
         setAnchorElUser(null);
     };
 
-    const handleChange = async () => {
-        if (password1.newpassword === confirmpassword) {
-            setpassMatch(true);
-        }
+
+    // useEffect(() => {
+    //     if () {
+    //         setpassMatch(true);
+    //         console.log("u", passMatch);
+    //     }
+
+    // }, [confirmpassword])
+
+    const handleChange = () => {
+        // if (password1.newpassword === confirmpassword) {
+        //     setpassMatch(true);
+        //     console.log(passMatch);
+        // }
+
         let payload = {
             password: password1.password,
             newpassword: password1.newpassword
         }
-        console.log(setpassMatch);
-        // if (passMatch) {
-        await axios(`http://localhost:8080/login/changepwd/${id}`, {
-            method: "PATCH",
-            data: payload,
-            headers: {
-                "auth-token": data.token
-            },
-        })
-            .then((res) => {
-                alert();
-                navigate('/Feed')
-                handleClose()
-
+        console.log(passMatch)
+        if (password1.newpassword === confirmpassword) {
+            console.log("first")
+            axios(`http://localhost:8080/login/changepwd/${id}`, {
+                method: "PATCH",
+                data: payload,
+                headers: {
+                    "auth-token": data.token
+                },
             })
-            .catch((err) => {
-                // console.log(data)
-                // alert("d");
-                // alert(err.response.data.message);
-                setErrorMessage(err.data.message)
-                // console.log("hi");
+                .then((res) => {
+                    // alert("user updated");
+                    handleClose()
+                    handleClick1();
 
-            })
-        // }
-        // else {
-        // alert("new password and confirm password not match")
-        // setErrorMessage("new password and confirm password not match")
-        // }
+                    setTimeout(() => {
+                        navigate('/')
+
+                    }, 1000);
+
+                })
+                .catch((err) => {
+                    setErrorMessage(err.data.message)
+                })
+
+        }
+        else {
+            alert("new password and confirm password not match")
+        }
+
         setpassword1({ password: "", newpassword: "" })
-
+        setConfirmPassword("")
     }
     const [fullname, setfullname] = useState("");
 
@@ -150,12 +184,13 @@ function Header() {
             method: "GET",
         })
             .then((res) => {
-                console.log(res);
-                if (res.data.users.firstname.img === "") {
-                    console.log("image");
+                // console.log(res);
+                if (res.data.users.img) {
+                    setimage(true)
+                    setimg1(res.data.users.img)
                 }
                 else {
-                    console.log("not image");
+                    setimage(false)
                 }
 
             })
@@ -169,6 +204,14 @@ function Header() {
     return (
         <div>
 
+            <Snackbar open={open1} autoHideDuration={2000} onClose={handleClose1}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+                <Alert onClose={handleClose1} severity="success" sx={{ width: '100%' }}>
+                    User Updated
+                </Alert>
+            </Snackbar>
+
+
             <AppBar position="static">
                 <Container maxWidth="xl">
                     <Toolbar disableGutters>
@@ -181,7 +224,7 @@ function Header() {
 
                         </Typography>
 
-                        <Typography style={{ fontSize: "20px", color: "black", font: "Bold", textAlign: "center" }}> Am Social Feed</Typography>
+                        <Typography style={{ fontSize: "20px", color: "black", font: "Bold", textAlign: "center" }}> </Typography>
 
                         <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                             <IconButton
@@ -212,42 +255,30 @@ function Header() {
                                     display: { xs: 'block', md: 'none' },
                                 }}
                             >
-                                {/* {pages.map((page) => (
-                                    <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                        <Typography textAlign="center">{page}</Typography>
-                                    </MenuItem>
-                                ))} */}
+
                             </Menu>
                         </Box>
                         <Typography
                             variant="h6"
                             noWrap
                             component="div"
-                            sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
+                            style={{ textAlign: "center" }}
                         >
                             AM Social Feed
                         </Typography>
                         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                            {/* {pages.map((page) => (
-                                <Button
-                                    key={page}
-                                    onClick={handleCloseNavMenu}
-                                    sx={{ my: 2, color: 'white', display: 'block' }}
-                                >
-                                    {page}
-                                </Button>
-                            ))} */}
+
                         </Box>
-                        {/* <Typography>
-                            {fullname}
-                        </Typography> */}
+
 
                         <Box sx={{ flexGrow: 0 }}>
                             {/* <Tooltip title="Open settings"> */}
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                                 {/* Header avtar */}
 
-                                <Avatar> {avtarName} </Avatar >
+                                {
+                                    image ? <Avatar alt="Remy Sharp" src={`http://localhost:8080/${img1}`} /> :
+                                        <Avatar> {avtarName} </Avatar >}
 
                             </IconButton>
                             {/* </Tooltip> */}
@@ -340,10 +371,12 @@ function Header() {
                         required
                         sx={{ marginBottom: "20px" }}
                     />
+                    {/* {(password1.newpassword === confirmpassword) ? setpassMatch(true) : ""} */}
 
-                    <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
+
+                    {/* <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
                         {errorMessage && <div className="error" style={{ color: "red" }}> {errorMessage} </div>}
-                    </Grid>
+                    </Grid> */}
 
                     <Grid item xs={12} sm={6}>
                         <Button type='submit' variant='contained' color='primary' sx={{ float: "center", marginTop: "20px" }} onClick={() => handleChange()}>Change password</Button>

@@ -8,7 +8,6 @@ import { GoogleLogin } from 'react-google-login';
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -16,6 +15,8 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 function Login() {
     const [open, setOpen] = React.useState(false);
+    const [status, setstatus] = useState("");
+    const [message, setmessage] = useState("")
 
     const [user, setuser] = useState({
         email: "",
@@ -37,6 +38,11 @@ function Login() {
 
     // }, [data])
 
+
+    const responseGoogle = (response) => {
+
+        console.log(response);
+    }
 
     const handleLogin = async () => {
         let payload = user
@@ -61,12 +67,16 @@ function Login() {
                         navigate('/Feed')
 
                     }, 1000);
-
+                    setstatus("");
+                    setmessage(res.data.message)
                 }
             })
             .catch((err) => {
                 // alert(err.response.data.message);
-                setErrorMessage(err.response.data.message)
+                // setErrorMessage(err.response.data.message)
+                setstatus("error");
+                setmessage(err.response.data.message)
+                setOpen(true);
             })
     }
 
@@ -87,8 +97,8 @@ function Login() {
                 anchorOrigin={{ vertical: "top", horizontal: "right" }}
             >
 
-                <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
-                    Login Successfully
+                <Alert onClose={handleClose} severity={status === "error" ? "error" : "success"} sx={{ width: "100%" }}>
+                    {message}
                 </Alert>
             </Snackbar>
 
@@ -160,12 +170,10 @@ function Login() {
                     {/* <button style={{ fontSize: "20px", marginBottom: "30px", marginLeft: "auto", marginRight: "auto" }}> <GoogleIcon /> Login with Google</button> */}
                     <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
                         <GoogleLogin
-                            clientId="658977310896-knrl3gka66fldh83dao2rhgbblmd4un9.apps.googleusercontent.com"
+                            clientId="85092170565-0jqeuldra1nj5rt4999rhh4snpnn62dl.apps.googleusercontent.com"
                             buttonText="Login With Google"
-                            // onSuccess={responseGoogle}
-                            // onFailure={responseGoogle}
-                            onClick={() => console.log("google")}
-                            cookiePolicy={'single_host_origin'}
+                            onSuccess={responseGoogle}
+                            onFailure={responseGoogle}
                             style={{ marginBottom: "30px", marginLeft: "auto", marginRight: "auto" }}
                         />
                     </Grid>
