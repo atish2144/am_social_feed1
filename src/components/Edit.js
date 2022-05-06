@@ -8,6 +8,8 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import MuiPhoneNumber from 'material-ui-phone-number';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -16,6 +18,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 function Edit() {
     const lcdata = JSON.parse(localStorage.getItem("data"))
     const id = lcdata && lcdata.currentUser._id;
+    const [count, setcount] = React.useState(0);
 
 
     const [open, setOpen] = React.useState(false);
@@ -52,11 +55,31 @@ function Edit() {
         setOpen(false);
     };
 
+    const DeleteHandler = async () => {
 
+        await axios(`http://localhost:8080/delete-image/${id}`, {
+            method: "PUT",
+            headers: {
+                "auth-token": lcdata.token,
+            },
+
+        })
+            .then((res) => {
+                console.log(res.data);
+                setcount(prev => prev + 1)
+            })
+            .catch((err) => {
+                console.log(err.response.data.message.details[0].message)
+                alert(err.response.data.message.details[0].message);
+
+            })
+
+
+
+    }
     const handleUpdate = async () => {
-
         let formData = new FormData()
-        formData.append('image', image);
+
         formData.append('firstname', data.firstname);
         formData.append('biodata', data.biodata);
         formData.append('gender', data.gender);
@@ -64,37 +87,65 @@ function Edit() {
         formData.append('mobile', data.mobile);
         formData.append('email', data.email);
 
-        await axios(`http://localhost:8080/edit-profile/${id}`, {
+        console.log(data.firstname);
+
+        image !== "" && formData.append('image', image);
+
+        console.log(image);
+
+        image !== "" ? await axios(`http://localhost:8080/edit-profile/${id}`, {
             method: "PUT",
             data: formData,
             headers: {
                 "auth-token": lcdata.token,
             },
 
+        }).then((res) => {
+            console.log(res.data);
+            handleClick();
+            console.log(res);
+
+            setTimeout(() => {
+                navigate('/Feed')
+
+            }, 1500);
+
         })
-
-            .then((res) => {
-                // alert(res.data.message);
-                handleClick();
-                console.log(res);
-
-                setTimeout(() => {
-                    navigate('/Feed')
-
-                }, 1500);
-
-            })
             .catch((err) => {
                 console.log(err.response.data.message.details[0].message)
                 alert(err.response.data.message.details[0].message);
-                navigate('/')
+
             })
+            : await axios(`http://localhost:8080/editprofile/${id}`, {
+                method: "PUT",
+                data: formData,
+                headers: {
+                    "auth-token": lcdata.token,
+                },
+
+            })
+
+                .then((res) => {
+                    console.log(res.data);
+                    handleClick();
+                    console.log(res);
+
+                    setTimeout(() => {
+                        navigate('/Feed')
+
+                    }, 1500);
+
+                })
+                .catch((err) => {
+                    console.log(err.response.data.message.details[0].message)
+                    alert(err.response.data.message.details[0].message);
+                    // navigate('/')
+                })
 
     }
 
 
     function handleChange(e) {
-        setimage(e.target.files[0])
         setFile(URL.createObjectURL(e.target.files[0]));
         setUpdateProfile(true)
     }
@@ -106,6 +157,7 @@ function Edit() {
         // }
         console.log(value);
     }
+
 
 
     useEffect(() => {
@@ -132,7 +184,7 @@ function Edit() {
             .catch((err) => {
                 console.log(err);
             })
-    }, [])
+    }, [count])
 
 
 
@@ -166,14 +218,22 @@ function Edit() {
                                 height: "90%",
                             }}
                             />
+
                         </Grid>
 
 
                         <Grid item sx={{ marginTop: "10px" }}>
-                            <FormControl>
+                            <FormControl >
 
                                 <FormLabel>Change Profile Picture</FormLabel>
-                                <Input type="file" label="Upload Profile Picture" onChange={handleChange} />
+                                <Input type="file" label="Upload Profile Picture" onChange={(e) => {
+                                    handleChange(e);
+                                    setimage(e.target.files[0])
+                                }} />
+                                <Grid item xs={12} sm={12} >
+                                    <DeleteIcon sx={{ fontSize: 40, marginTop: 5, }}
+                                        onClick={() => DeleteHandler()} />
+                                </Grid>
                             </FormControl>
 
                         </Grid>
@@ -194,6 +254,7 @@ function Edit() {
                                 fullWidth
                                 required
                             />
+
                         </Grid>
 
                         <Grid item xs={12} sm={12}>
@@ -268,24 +329,12 @@ function Edit() {
                                 // required
                                 />
                                 {/* </FormControl> */}
+                                {/* onclick={() => console.log("ok")}      */}
                             </MuiPickersUtilsProvider>
                         </Grid>
 
 
-                        {/* <Grid item xs={12} sm={12}>
-                            <TextField
-                                error={false}
-                                type='number'
-                                id="outlined-error"
-                                label="Mobile Number"
-                                placeholder='Enter Mobile Number'
 
-                                value={data.mobile}
-                                onChange={(e) => setdata({ ...data, mobile: e.target.value })}
-                                fullWidth
-                                required
-                            />
-                        </Grid> */}
 
 
                         <Grid item xs={12} sm={12}>
@@ -325,7 +374,7 @@ function Edit() {
             </Card>
 
 
-        </div>
+        </div >
     )
 }
 

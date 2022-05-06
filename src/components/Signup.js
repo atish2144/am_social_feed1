@@ -48,7 +48,7 @@ function Signup() {
             .catch((err) => {
                 console.log(data)
                 // alert(err.response.data.message);
-                setErrorMessage(err.response.data.message)
+                // setErrorMessage(err.response.data.message)
                 setstatus("error");
                 setmessage(err.response.data.message)
                 setOpen(true);
@@ -71,7 +71,7 @@ function Signup() {
     return (
 
         <div>
-            <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}
+            <Snackbar open={open} autoHideDuration={2000} onClose={handleClose}
                 anchorOrigin={{ vertical: "top", horizontal: "right" }}>
                 <Alert onClose={handleClose} severity={status === "error" ? "error" : "success"} sx={{ width: '100%' }}>
                     {message}
@@ -148,9 +148,6 @@ function Signup() {
                             sx={{ minWidth: "100%" }}
                         />
                     </Grid>
-                    {/* <Grid item xs={12} sm={12} sx={{ marginTop: "10px", marginBottom: "20px" }}>
-                        {errorMessage && <div className="error" style={{ color: "red" }}> {errorMessage} </div>}
-                    </Grid> */}
 
                     <Grid item xs={12} sm={6} sx={{ marginTop: "30px" }}>
                         <Button type='submit' variant='contained' color='primary' sx={{ marginRight: "20px" }} onClick={() => { handleSignup(); handleClick() }} >Sign up</Button>

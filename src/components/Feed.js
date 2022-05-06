@@ -13,16 +13,19 @@ import { red } from '@mui/material/colors';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import Header from "./Header"
 import CommentIcon from '@mui/icons-material/Comment';
 import SendIcon from '@mui/icons-material/Send';
 import TextField from '@mui/material/TextField';
-import { Button, FormControl, FormLabel, Grid, Input, TextareaAutosize } from '@mui/material';
+import { Button, FormControl, FormLabel, Grid, Input, Stack, TextareaAutosize } from '@mui/material';
 import { Modal } from '@mui/material';
 import Box from '@mui/material/Box';
-// import useInfiniteScroll from 'react-infinite-scroll-hook';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 import axios from 'axios';
+import Skel from "./Skel"
+
 // expand
 const ExpandMore = styled((props) => {
     const { expand, ...other } = props;
@@ -65,7 +68,7 @@ function Feed() {
     const [data1, setdata1] = useState(JSON.parse(localStorage.getItem("data")));
     const [colorlike, setcolorlike] = React.useState(false);
     const [showcomment, setshowcomment] = React.useState(false);
-    // const [img1, setimg1] = React.useState(false);
+    const [limit1, setlimit1] = React.useState(3);
 
     const Name = data1.currentUser.firstname + " " + data1.currentUser.lastname
     //for modal
@@ -79,10 +82,23 @@ function Feed() {
     const [caption, setcaption] = useState("");
     const [image, setimage] = useState("")
     const [count, setcount] = useState(0)
+    const [isloading, setisloading] = useState(false)
     // const { loading, items, hasNextPage, error, loadMore } = useLoadItems();
     const handleExpandClick = (id) => {
         setExpanded(id)
     };
+
+
+    // fetch data infinity
+    const fetchMoreData = () => {
+        setTimeout(() => {
+            setlimit1(prev => prev + 3)
+            setcount(prev => prev + 1)
+
+        }, 2000);
+
+    }
+
     const commentposthandler = (id, rowcomment, name) => {
         if (rowcomment !== "") {
             const playlod = {
@@ -151,7 +167,8 @@ function Feed() {
     }
     // use effect
     useEffect(() => {
-        axios(`http://localhost:8080/?page=1&limit=3000`, {
+
+        axios(`http://localhost:8080/?page=1&limit=${limit1}`, {
             method: "GET",
             headers: {
                 "auth-token": data.token
@@ -159,89 +176,165 @@ function Feed() {
         })
             .then((res) => {
                 setpost(res.data.post)
+                setisloading(true);
             })
             .catch((err) => {
                 console.log(err);
             })
+        setTimeout(() => {
+
+        }, 3000);
+
     }, [count])
+    //
+    const stk = () => {
+        return <>
+            <Card sx={{ maxWidth: 400, marginLeft: "35%", marginTop: "20px" }}>
+                <CardHeader
+                    avatar={
+                        <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                            <Skeleton variant="circular" width={40} height={40} />
+
+                        </Avatar>
+                    }
+
+                    title={<Skeleton variant="text" />}
+                />
+                <Skeleton variant="rectangular" width={210} height={194} />
+                <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                        <Skeleton variant="text" />
+                    </Typography>
+                </CardContent>
+
+
+            </Card>
+            <Card sx={{ maxWidth: 400, marginLeft: "35%", marginTop: "20px" }}>
+                <CardHeader
+                    avatar={
+                        <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                            <Skeleton variant="circular" width={40} height={40} />
+
+                        </Avatar>
+                    }
+
+                    title={<Skeleton variant="text" />}
+                />
+                <Skeleton variant="rectangular" width={210} height={194} />
+                <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                        <Skeleton variant="text" />
+                    </Typography>
+                </CardContent>
+
+
+            </Card>
+        </>
+
+
+    }
+
     return (
         <div style={{ backgroundColor: "#518CDB" }}>
             <Header></Header>
-            {/* <button style={{float:"right",margin:"5px 10px 0 0" ,color:"primary"}}>Add Post</button>     */}
             <Button type='submit' variant='contained' color='primary' sx={{ float: "right", margin: "5px 5px 0 0" }} onClick={handleOpen} >Add Post</Button>
-            {post.length > 0 && post.map((posts) => {
-                return (
-                    <div key={posts._id} style={{ marginTop: "20px" }}>
-                        <Card sx={{ maxWidth: 400, marginLeft: "35%", border: "0.25px solid black" }}>
-                            <CardHeader sx={{ bgcolor: red[100] }}
-                                avatar={
-                                    <Avatar sx={{ bgcolor: red[500] }} aria-label="photo" >
-                                        {fun(`${posts.username}`)}
-                                    </Avatar>
-                                }
 
-                                title={posts.username}
+            <InfiniteScroll
+                dataLength={post.length}
+                next={fetchMoreData}
+                hasMore={true}
+                loader={
+                    stk()
+                }
+                endMessage={
+                    <p style={{ textAlign: "center" }}>
+                        <b>Yay! You have seen it all</b>
+                    </p>
+                }
+            >
+                <div>
 
-                            />
-                            <CardMedia
-                                component="img"
-                                height="250"
-                                width="200"
-                                image={`http://localhost:8080/${posts.img}`}
-                                alt="not found"
-                            />
-                            <CardContent>
-                                <Typography variant="body2" color="text.secondary">
-                                    {posts.caption}
-                                </Typography>
-                            </CardContent>
-                            {/* { */}
-                            <CardActions disableSpacing>
-                                <Typography >
-                                    <IconButton aria-label="add to favorites">
-                                        <FavoriteIcon onClick={(e) => { setcolorlike(colorlike == posts.id); LikeHandler(posts._id) }}
-                                            style={{ color: (colorlike) ? "red" : "grey" }} />
-                                    </IconButton>
-                                    {posts.like.length}
-                                </Typography>
-                                <Typography>
-                                    <IconButton aria-label="add to favorites">
-                                        <CommentIcon style={{ marginLeft: "9" }}
-                                            expand={expanded}
-                                            onClick={() => { handleExpandClick(posts._id); setshowcomment(!showcomment) }}
-                                            aria-expanded={expanded}
-                                            aria-label="show more"
-                                        />
-                                    </IconButton>
-                                    {posts.comment.length}
-                                </Typography>
-                                <ExpandMoreIcon onClick={() => setshowcomment(!showcomment)} />
-                            </CardActions>
-                            <Collapse in={showcomment ? expanded === posts._id : false} timeout="auto" unmountOnExit style={{ maxHeight: 200, overflow: 'auto' }}>
-                                <Typography ></Typography>
-                                <CardContent>
-                                    <Typography >
-                                        <TextField style={{ width: "315px" }} label="Comments" variant="standard" value={rowcomment}
-                                            onChange={(e) => setrowcomment(e.target.value)}
-                                        />
-                                        <SendIcon onClick={() => { commentposthandler(posts._id, rowcomment, Name) }} />
-                                    </Typography >
-                                    {posts.comment.length > 0 && posts.comment.map((ele, index) =>
-                                        <Typography key={index} style={{ textAlign: "left", marginTop: "8px", marginLeft: "8px", display: 'flex' }}>
-
-                                            <Avatar sx={{ width: 24, height: 24, fontSize: 12, marginRight: 2, bgcolor: red[800] }}>
-                                                {fun(`${ele.commenter}`)}
+                    {post.length > 0 && post.map((posts) => {
+                        return (
+                            <div key={posts._id} style={{ marginTop: "20px" }}>
+                                <Card sx={{ maxWidth: 400, marginLeft: "35%", border: "0.25px solid black" }}>
+                                    <CardHeader sx={{ bgcolor: red[100] }}
+                                        avatar={
+                                            <Avatar sx={{ bgcolor: red[500] }} aria-label="photo" >
+                                                {fun(`${posts.username}`)}
                                             </Avatar>
-                                            {ele.comment}
+                                        }
+
+                                        title={posts.username}
+
+                                    />
+                                    <CardMedia
+                                        component="img"
+                                        height="250"
+                                        width="200"
+                                        image={`http://localhost:8080/${posts.img}`}
+                                        alt="not found"
+                                    />
+                                    <CardContent>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {posts.caption}
                                         </Typography>
-                                    )}
-                                </CardContent>
-                            </Collapse>
-                        </Card>
-                    </div>
-                )
-            }
-            )}
+                                    </CardContent>
+                                    {/* { */}
+                                    <CardActions disableSpacing>
+                                        <Typography >
+                                            <IconButton aria-label="add to favorites">
+                                                <FavoriteIcon onClick={(e) => { setcolorlike(colorlike == posts.id); LikeHandler(posts._id) }}
+                                                    style={{ color: (colorlike) ? "red" : "grey" }} />
+                                            </IconButton>
+                                            {posts.like.length}
+                                        </Typography>
+                                        <Typography>
+                                            <IconButton aria-label="add to favorites">
+                                                <CommentIcon style={{ marginLeft: "9" }}
+                                                    expand={expanded}
+                                                    onClick={() => { handleExpandClick(posts._id); setshowcomment(!showcomment) }}
+                                                    aria-expanded={expanded}
+                                                    aria-label="show more"
+                                                />
+                                            </IconButton>
+                                            {posts.comment.length}
+                                        </Typography>
+                                        <ExpandMoreIcon onClick={() => setshowcomment(!showcomment)} />
+                                    </CardActions>
+                                    <Collapse in={showcomment ? expanded === posts._id : false} timeout="auto" unmountOnExit style={{ maxHeight: 200, overflow: 'auto' }}>
+                                        <Typography ></Typography>
+                                        <CardContent>
+                                            <Typography >
+                                                <TextField style={{ width: "315px" }} label="Comments" variant="standard" value={rowcomment}
+                                                    onChange={(e) => setrowcomment(e.target.value)}
+                                                />
+                                                <SendIcon onClick={() => { commentposthandler(posts._id, rowcomment, Name) }} />
+                                            </Typography >
+                                            {posts.comment.length > 0 && posts.comment.map((ele, index) =>
+                                                <Typography key={index} style={{ textAlign: "left", marginTop: "8px", marginLeft: "8px", display: 'flex' }}>
+
+                                                    <Avatar sx={{ width: 24, height: 24, fontSize: 12, marginRight: 2, bgcolor: red[800] }}>
+                                                        {fun(`${ele.commenter}`)}
+                                                    </Avatar>
+                                                    {ele.comment}
+                                                </Typography>
+                                            )}
+                                        </CardContent>
+                                    </Collapse>
+                                </Card>
+
+                            </div>
+
+
+
+
+                        )
+                    }
+                    )}
+
+                </div>
+            </InfiniteScroll>
             {/* modal */}
             <Modal
                 open={open}
@@ -279,7 +372,37 @@ function Feed() {
                     <Button type='submit' variant='contained' color='primary' sx={{ float: "right", margin: "5px 5px 0 0" }} onClick={() => { handlepost(); handleClose() }} >Add Post</Button>
                 </Box>
             </Modal>
-        </div>
+        </div >
+
     )
 }
 export default Feed
+
+
+         // <Card sx={{ maxWidth: 400, marginLeft: "35%", border: "0.25px solid black" }}>
+                    //     <CardHeader
+                    //         avatar={
+                    //             <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                    //                 <Skeleton variant="circular" width={40} height={40} />
+
+                    //             </Avatar>
+                    //         }
+
+                    //         title="Shrimp and Chorizo Paella"
+                    //     />
+                    //     <CardMedia
+                    //         component="img"
+                    //         height="194"
+                    //         image="/static/images/cards/paella.jpg"
+                    //         alt="Paella dish"
+                    //     />
+                    //     <CardContent>
+                    //         <Typography variant="body2" color="text.secondary">
+                    //             This impressive paella is a perfect party dish and a fun meal to cook
+                    //             together with your guests. Add 1 cup of frozen peas along with the mussels,
+                    //             if you like.
+                    //         </Typography>
+                    //     </CardContent>
+
+
+                    // </Card>

@@ -168,7 +168,7 @@ function Header() {
             method: "GET",
         })
             .then((res) => {
-                console.log(res)
+
                 setfullname(res.data.users.firstname + " " + res.data.users.lastname);
                 console.log(fullname);
 

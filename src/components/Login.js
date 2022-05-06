@@ -25,18 +25,18 @@ function Login() {
 
     const [errorMessage, setErrorMessage] = React.useState("");
     const [data, setdata] = useState("")
-    const [lcdata, setlcdata] = useState(JSON.parse(localStorage.getItem("data")))
-
+    // const [lcdata, setlcdata] = useState(JSON.parse(localStorage.getItem("data")))
+    // console.log(lcdata);
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     console.log(lcdata);
-    //     if (lcdata.token != null && lcdata.token) {
-    //         console.log(lcdata.token);
-    //         navigate('/Feed')
-    //     }
+    useEffect(() => {
+        const lcdata = JSON.parse(localStorage.getItem("data")) || ""
+        if (lcdata.token !== null && lcdata !== "") {
+            console.log(lcdata.token);
+            navigate('/Feed')
+        }
 
-    // }, [data])
+    }, [])
 
 
     const responseGoogle = async (res) => {
@@ -74,7 +74,6 @@ function Login() {
 
     const handleLogin = async () => {
         let payload = user
-
         await axios(`http://localhost:8080/login`, {
             method: "POST",
             data: payload,
