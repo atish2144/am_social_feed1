@@ -57,45 +57,70 @@ function Edit() {
 
     const DeleteHandler = async () => {
 
-        await axios(`http://localhost:8080/delete-image/${id}`, {
-            method: "PUT",
-            headers: {
-                "auth-token": lcdata.token,
-            },
 
-        })
-            .then((res) => {
-                console.log(res.data);
-                setcount(prev => prev + 1)
-            })
-            .catch((err) => {
-                console.log(err.response.data.message.details[0].message)
-                alert(err.response.data.message.details[0].message);
+        const confirm = window.confirm("Are you sure to delete profile picture?");
+
+        if (confirm) {
+
+            await axios(`http://localhost:8080/delete-image/${id}`, {
+                method: "PUT",
+                headers: {
+                    "auth-token": lcdata.token,
+                },
 
             })
 
+                .then((res) => {
+                    console.log(res.data);
+                    setcount(prev => prev + 1)
+                })
+                .catch((err) => {
+                    console.log(err.response.data.message.details[0].message)
+                    alert(err.response.data.message.details[0].message);
+
+                })
+        }
 
 
     }
     const handleUpdate = async () => {
-        let formData = new FormData()
+        let flag = true;
 
-        formData.append('firstname', data.firstname);
-        formData.append('biodata', data.biodata);
-        formData.append('gender', data.gender);
-        formData.append('dateofbirth', data.dateofbirth);
-        formData.append('mobile', data.mobile);
-        formData.append('email', data.email);
+        let formData = new FormData();
 
-        console.log(data.firstname);
+        if (image !== "") {
+            flag = true
+            formData.append('firstname', data.firstname);
+            formData.append('biodata', data.biodata);
+            formData.append('gender', data.gender);
+            formData.append('dateofbirth', data.dateofbirth);
+            formData.append('mobile', data.mobile);
+            formData.append('email', data.email);
+            formData.append('image', image);
+        }
+        else {
+            console.log("ok");
+            flag = false
+            formData.append('firstname', data.firstname);
+            formData.append('biodata', data.biodata);
+            formData.append('gender', data.gender);
+            formData.append('dateofbirth', data.dateofbirth);
+            formData.append('mobile', data.mobile);
+            formData.append('email', data.email);
+            formData.append('image', "");
 
-        image !== "" && formData.append('image', image);
 
-        console.log(image);
+        }
 
-        image !== "" ? await axios(`http://localhost:8080/edit-profile/${id}`, {
+
+        console.log(data);
+        // console.log(await formData.getAll(data));
+
+        const url = flag ? `http://localhost:8080/edit-profile/${id}` : `http://localhost:8080/editprofile/${id}`
+
+        await axios(url, {
             method: "PUT",
-            data: formData,
+            data: flag ? formData : data,
             headers: {
                 "auth-token": lcdata.token,
             },
@@ -116,31 +141,32 @@ function Edit() {
                 alert(err.response.data.message.details[0].message);
 
             })
-            : await axios(`http://localhost:8080/editprofile/${id}`, {
-                method: "PUT",
-                data: formData,
-                headers: {
-                    "auth-token": lcdata.token,
-                },
 
-            })
+        //  await axios(`http://localhost:8080/editprofile/${id}`, {
+        //     method: "PUT",
+        //     data: formData,
+        //     headers: {
+        //         "auth-token": lcdata.token,
+        //     },
 
-                .then((res) => {
-                    console.log(res.data);
-                    handleClick();
-                    console.log(res);
+        // })
 
-                    setTimeout(() => {
-                        navigate('/Feed')
+        //     .then((res) => {
+        //         console.log(res.data);
+        //         handleClick();
+        //         console.log(res);
 
-                    }, 1500);
+        //         setTimeout(() => {
+        //             navigate('/Feed')
 
-                })
-                .catch((err) => {
-                    console.log(err.response.data.message.details[0].message)
-                    alert(err.response.data.message.details[0].message);
-                    // navigate('/')
-                })
+        //         }, 1500);
+
+        //     })
+        //     .catch((err) => {
+        //         console.log(err.response.data.message.details[0].message)
+        //         alert(err.response.data.message.details[0].message);
+
+        //     })
 
     }
 
@@ -151,11 +177,8 @@ function Edit() {
     }
 
     function handleOnChange(value) {
-        console.log(value);
-        // if (no !== undefined && no !== "") {
+
         setdata({ ...data, mobile: value })
-        // }
-        console.log(value);
     }
 
 
@@ -166,7 +189,7 @@ function Edit() {
             method: "GET",
         })
             .then((res) => {
-                console.log(res.data.users.img);
+                console.log(res.data.users);
                 if (res.data.users != "") {
 
                     setdata({
@@ -209,17 +232,30 @@ function Edit() {
                                 display: "flex", justifyContent: "center",
                                 alignItems: "center",
                                 // width: "70%",
-                                // height: "90%"       border: "1px solid grey",
+                                // height: "90%"   
+                                // border: "1px solid grey",
 
                             }}
                         >
-                            <img src={updateProfile ? file : `http://localhost:8080/${data.img}`} alt="log" style={{
-                                width: "70%",
-                                height: "90%",
-                            }}
-                            />
+
+                            {
+                                file != "" && < img src={updateProfile ? file : `http://localhost:8080/${data.img}`} alt="log" style={{
+                                    width: "70%",
+                                    height: "90%",
+                                }}
+                                />
+                            }
+
+                            {/* {
+                                updateProfile && file != "" && < img src={updateProfile ? file : `http://localhost:8080/${data.img}`} alt="log" style={{
+                                    width: "70%",
+                                    height: "90%",
+                                }}
+                                />
+                            } */}
 
                         </Grid>
+
 
 
                         <Grid item sx={{ marginTop: "10px" }}>
@@ -297,7 +333,6 @@ function Edit() {
                                     aria-labelledby="demo-row-radio-buttons-group-label"
                                     name="row-radio-buttons-group"
                                     value={data.gender}
-                                    // onChange={(e) => setEmployee({ ...employee, gender: e.target.value })}
                                     onChange={(e) => setdata({ ...data, gender: e.target.value })}
                                 >
                                     <FormControlLabel value="male" control={<Radio />} label="Male" />
@@ -307,11 +342,11 @@ function Edit() {
                         </Grid>
 
 
-                        <Grid item xs={6} >
+                        <Grid item xs={12} >
 
                             <label>Date</label>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} >
                             <MuiPickersUtilsProvider utils={DateFnsUtils}>
                                 {/* <FormControl> */}
                                 {/* <FormLabel>DOB</FormLabel> */}
@@ -344,7 +379,7 @@ function Edit() {
                                 // onChange={(e) => setdata({ ...data, mobile: e.target.value })}
                                 onChange={(value) => handleOnChange(value)}
                                 fullWidth
-                                required
+                            // required
                             />
 
                         </Grid>
@@ -361,6 +396,7 @@ function Edit() {
                                 fullWidth
                                 required
                                 sx={{ marginBottom: "20px" }}
+                                helperText="email"
                             />
                         </Grid>
 

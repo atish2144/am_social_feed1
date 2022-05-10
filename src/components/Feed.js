@@ -44,7 +44,7 @@ const style = {
     transform: 'translate(-50%, -50%)',
     width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    // border: '2px solid #000',
     boxShadow: 24,
     p: 4,
 };
@@ -66,7 +66,7 @@ function Feed() {
     const [expanded, setExpanded] = React.useState(false);
     const [data, setdata] = useState(JSON.parse(localStorage.getItem("data")));
     const [data1, setdata1] = useState(JSON.parse(localStorage.getItem("data")));
-    const [colorlike, setcolorlike] = React.useState(false);
+    const [colorlike, setcolorlike] = React.useState("");
     const [showcomment, setshowcomment] = React.useState(false);
     const [limit1, setlimit1] = React.useState(3);
 
@@ -98,7 +98,7 @@ function Feed() {
         }, 2000);
 
     }
-
+    // commment
     const commentposthandler = (id, rowcomment, name) => {
         if (rowcomment !== "") {
             const playlod = {
@@ -122,11 +122,13 @@ function Feed() {
             alert("post not update")
         setrowcomment("")
     }
+
     function handleChange(e) {
         setimage(e.target.files[0])
         setFile(URL.createObjectURL(e.target.files[0]));
     }
     //for add post 
+
     // image 
     const handlepost = async () => {
         let formData = new FormData()
@@ -146,13 +148,16 @@ function Feed() {
             .catch((err) => {
             })
         setcount(prev => prev + 1)
+
+        // setcaption("");
+        // setFile("");
     }
     // like handler
     const LikeHandler = (id) => {
+
         const playlod = {
             "id": data.currentUser._id
         }
-
         axios(`http://localhost:8080/like/${id}`, {
             method: "PUT",
             data: playlod,
@@ -164,10 +169,10 @@ function Feed() {
                 setcount(prev => prev + 1)
             })
             .catch((err) => { console.log(err) })
+        setcolorlike(id)
     }
     // use effect
     useEffect(() => {
-
         axios(`http://localhost:8080/?page=1&limit=${limit1}`, {
             method: "GET",
             headers: {
@@ -181,6 +186,7 @@ function Feed() {
             .catch((err) => {
                 console.log(err);
             })
+
         setTimeout(() => {
 
         }, 3000);
@@ -227,15 +233,12 @@ function Feed() {
                     </Typography>
                 </CardContent>
 
-
             </Card>
         </>
-
-
     }
 
     return (
-        <div style={{ backgroundColor: "#518CDB" }}>
+        <div style={{ backgroundColor: "#E3E1D1" }}>
             <Header></Header>
             <Button type='submit' variant='contained' color='primary' sx={{ float: "right", margin: "5px 5px 0 0" }} onClick={handleOpen} >Add Post</Button>
 
@@ -258,20 +261,21 @@ function Feed() {
                         return (
                             <div key={posts._id} style={{ marginTop: "20px" }}>
                                 <Card sx={{ maxWidth: 400, marginLeft: "35%", border: "0.25px solid black" }}>
-                                    <CardHeader sx={{ bgcolor: red[100] }}
+                                    <CardHeader sx={{ bgcolor: "#697872" }}
                                         avatar={
                                             <Avatar sx={{ bgcolor: red[500] }} aria-label="photo" >
                                                 {fun(`${posts.username}`)}
                                             </Avatar>
                                         }
 
-                                        title={posts.username}
+                                        title={posts.username} style={{ fontSize: "40px", fontWeight: "Bold", color: "black", textAlign: "left" }}
 
                                     />
+
                                     <CardMedia
                                         component="img"
                                         height="250"
-                                        width="200"
+                                        width="160"
                                         image={`http://localhost:8080/${posts.img}`}
                                         alt="not found"
                                     />
@@ -284,8 +288,8 @@ function Feed() {
                                     <CardActions disableSpacing>
                                         <Typography >
                                             <IconButton aria-label="add to favorites">
-                                                <FavoriteIcon onClick={(e) => { setcolorlike(colorlike == posts.id); LikeHandler(posts._id) }}
-                                                    style={{ color: (colorlike) ? "red" : "grey" }} />
+                                                <FavoriteIcon onClick={(e) => { setcolorlike(posts.id); LikeHandler(posts._id) }}
+                                                    style={{ color: (posts.like.includes(data.currentUser._id)) ? "red" : "grey" }} />
                                             </IconButton>
                                             {posts.like.length}
                                         </Typography>
@@ -300,10 +304,12 @@ function Feed() {
                                             </IconButton>
                                             {posts.comment.length}
                                         </Typography>
-                                        <ExpandMoreIcon onClick={() => setshowcomment(!showcomment)} />
+                                        {/* <ExpandMoreIcon onClick={() => setshowcomment(!showcomment)} /> */}
                                     </CardActions>
                                     <Collapse in={showcomment ? expanded === posts._id : false} timeout="auto" unmountOnExit style={{ maxHeight: 200, overflow: 'auto' }}>
-                                        <Typography ></Typography>
+                                        <Typography >
+                                            <hr />
+                                        </Typography>
                                         <CardContent>
                                             <Typography >
                                                 <TextField style={{ width: "315px" }} label="Comments" variant="standard" value={rowcomment}
@@ -327,8 +333,6 @@ function Feed() {
                             </div>
 
 
-
-
                         )
                     }
                     )}
@@ -342,7 +346,11 @@ function Feed() {
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
+
                 <Box sx={style}>
+                    <div> <button style={{ float: "right", border: "none", marginBottom: "10px", marginLeft: "40px" }} onClick={() => handleClose()}>X</button>
+                    </div>
+
                     <Grid item xs={6}
                         sx={{
                             display: "flex",
@@ -351,7 +359,10 @@ function Feed() {
                             border: "1px solid grey"
                         }}
                     >
-                        <img src={file} alt="log" style={{ width: "50%", height: "50%" }} />
+                        {
+
+                            file != "" && <img src={file} alt="log" style={{ width: "50%", height: "50%" }} />
+                        }
                     </Grid>
                     <Grid item sx={{ marginTop: "10px" }}>
                         <FormControl>
@@ -378,31 +389,3 @@ function Feed() {
 }
 export default Feed
 
-
-         // <Card sx={{ maxWidth: 400, marginLeft: "35%", border: "0.25px solid black" }}>
-                    //     <CardHeader
-                    //         avatar={
-                    //             <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                    //                 <Skeleton variant="circular" width={40} height={40} />
-
-                    //             </Avatar>
-                    //         }
-
-                    //         title="Shrimp and Chorizo Paella"
-                    //     />
-                    //     <CardMedia
-                    //         component="img"
-                    //         height="194"
-                    //         image="/static/images/cards/paella.jpg"
-                    //         alt="Paella dish"
-                    //     />
-                    //     <CardContent>
-                    //         <Typography variant="body2" color="text.secondary">
-                    //             This impressive paella is a perfect party dish and a fun meal to cook
-                    //             together with your guests. Add 1 cup of frozen peas along with the mussels,
-                    //             if you like.
-                    //         </Typography>
-                    //     </CardContent>
-
-
-                    // </Card>

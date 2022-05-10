@@ -145,6 +145,7 @@ function Header() {
 
                     setTimeout(() => {
                         navigate('/')
+                        localStorage.clear();
 
                     }, 1000);
 
@@ -199,6 +200,19 @@ function Header() {
             })
 
     });
+
+    const logout = () => {
+        // handleCloseUserMenu();
+        const confirm = window.confirm("Are you sure to Logout?");
+
+        if (confirm) {
+            console.log("logout");
+            navigate('/');
+            localStorage.clear();
+        }
+
+    }
+
 
 
     return (
@@ -312,9 +326,14 @@ function Header() {
                                     <Typography textAlign="center" onClick={() => handleOpen()} >{settings[1]}</Typography>
                                 </MenuItem>
 
-                                <MenuItem key={2} onClick={() => { handleCloseUserMenu(); navigate('/'); localStorage.clear() }}>
+                                <MenuItem key={2} onClick={() => { handleCloseUserMenu(); logout() }}>
                                     <Typography textAlign="center"   >{settings[2]}</Typography>
                                 </MenuItem>
+
+                                {/* <MenuItem key={2} onClick={() => { handleCloseUserMenu(); navigate('/'); localStorage.clear(); }}>
+                                    <Typography textAlign="center"   >{settings[2]}</Typography>
+                                </MenuItem> */}
+
 
                             </Menu>
                         </Box>
